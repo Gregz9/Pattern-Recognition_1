@@ -39,26 +39,34 @@ def estimate_class_cov(class_one_mean, class_two_mean, train_obs, train_targets)
     return cov_one, cov_two
 
 
-def build_discriminant(test_obs, class_means, class_covs, a_priori_probs):
-    W_one = -(1 / 2) * np.linalg.inv(class_covs[0])
-    W_two = -(1 / 2) * np.linalg.inv(class_covs[1])
+def _class_discriminant(test_obs, class_mean, class_cov, a_priori_prob):
+    W = -(1 / 2) * np.linalg.inv(class_cov)
+    # W_two = -(1 / 2) * np.linalg.inv(class_covs[1])
 
-    w_one = np.linalg.inv(class_covs[0]) * class_means[0]
-    w_two = np.linalg.inv(class_covs[1]) * class_means[1]
+    w = np.linalg.inv(class_cov) * class_mean
+    # w_two = np.linalg.inv(class_covs[1]) * class_means[1]
 
-    w_one_0 = (
-        -(1 / 2) * class_means[0] @ np.linalg(class_covs[0]) @ class_means[0].T
-        - (1 / 2) * np.log(np.abs(class_covs[0]))
-        + np.log(a_priori_probs[0])
-    )
-    w_two_0 = (
-        -(1 / 2) * class_means[1] @ np.linalg(class_covs[1]) @ class_means[1].T
-        - (1 / 2) * np.log(np.abs(class_covs[1]))
-        + np.log(a_priori_probs[1])
+    w_0 = (
+        -(1 / 2) * class_mean @ np.linalg.inv(class_cov) @ class_mean.T
+        - (1 / 2) * np.log(np.linalg.det(class_cov))
+        + np.log(a_priori_prob)
     )
 
-    
+    # w_two_0 = (
+    #     -(1 / 2) * class_means[1] @ np.linalg(class_covs[1]) @ class_means[1].T
+    #     - (1 / 2) * np.log(np.linalg.det(class_covs[1]))
+    #     + np.log(a_priori_probs[1])
+    # )
+    def discriminant_func(test_obs):
+        g_x = test_obs @ W @ test_obs.T + w.T @ test_obs + w_0
 
+        return g_x
+
+    return discriminant_func
+
+
+def gen_discriminant(c1_discr, c2_discr):
+    return c1_discr - c2_discr
 
 
 if __name__ == "__main__":
