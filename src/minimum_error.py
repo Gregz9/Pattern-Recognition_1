@@ -2,9 +2,9 @@ import numpy as np
 from utils import *
 
 
-def estimate_a_priori(classes):
-    class_one = np.sum(classes == 1)
-    prob_one = class_one / classes.shape[0]
+def estimate_a_priori(train_targets):
+    class_one = np.sum(train_targets == 1)
+    prob_one = class_one / train_targets.shape[0]
     prob_two = 1.0 - prob_one
     return prob_one, prob_two
 
@@ -23,38 +23,25 @@ def estimate_class_cov(class_one_mean, class_two_mean, train_obs, train_targets)
     cov_one = (class_one_dev.T @ class_one_dev) / (N_one - 1)
     cov_two = (class_two_dev.T @ class_two_dev) / (N_two - 1)
 
-    print(cov_one)
     return cov_one, cov_two
 
 
-def _class_discriminant(test_obs, class_mean, class_cov, a_priori_prob):
+def _class_discriminant(class_mean, class_cov, a_priori_prob):
     W = -(1 / 2) * np.linalg.inv(class_cov)
-    # W_two = -(1 / 2) * np.linalg.inv(class_covs[1])
 
-    w = np.linalg.inv(class_cov) * class_mean
-    # w_two = np.linalg.inv(class_covs[1]) * class_means[1]
+    w = np.linalg.inv(class_cov) @ class_mean
 
     w_0 = (
-        -(1 / 2) * class_mean @ np.linalg.inv(class_cov) @ class_mean.T
+        -(1 / 2) * class_mean @ np.linalg.inv(class_cov) @ class_mean
         - (1 / 2) * np.log(np.linalg.det(class_cov))
         + np.log(a_priori_prob)
     )
 
-    # w_two_0 = (
-    #     -(1 / 2) * class_means[1] @ np.linalg(class_covs[1]) @ class_means[1].T
-    #     - (1 / 2) * np.log(np.linalg.det(class_covs[1]))
-    #     + np.log(a_priori_probs[1])
-    # )
-    def discriminant_func(test_obs):
-        g_x = test_obs @ W @ test_obs.T + w.T @ test_obs + w_0
-
-        return g_x
-
-    return discriminant_func
+    return lambda test_obs: np.sum(test_obs @ W * test_obs, axis=1) + test_obs @ w + w_0
 
 
 def gen_discriminant(c1_discr, c2_discr):
-    return c1_discr - c2_discr
+    return lambda test_obs: c1_discr(test_obs) - c2_discr(test_obs)
 
 
 if __name__ == "__main__":
@@ -63,4 +50,14 @@ if __name__ == "__main__":
     train_obs, test_obs, train_targets, test_targets = split_data(obs, targets)
 
     class_one_mean, class_two_mean = estimate_class_mean(train_obs, train_targets)
-    estimate_class_cov(class_one_mean, class_two_mean, train_obs, train_targets)
+    cov_one, cov_two = estimate_class_cov(
+        class_one_mean, class_two_mean, train_obs, train_targets
+    )
+
+    a_priori_one, a_priori_two = estimate_a_priori(train_targets)
+
+    discriminant_one = _class_discriminant(class_one_mean, cov_one, a_priori_one)
+    discriminant_two = _class_discriminant(class_two_mean, cov_two, a_priori_two)
+
+    func = gen_discriminant(discriminant_one, discriminant_two)
+    print(np.where(func(test_obs) > 0, 1, 2))

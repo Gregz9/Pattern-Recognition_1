@@ -20,7 +20,7 @@ def nearest_neighbour(train_obs, train_targets):
         )
         c_train_obs[i] = train_targets[near_neigh]
 
-    return c_train_obs
+    return c_train_obs.flatten()
 
 
 if __name__ == "__main__":
@@ -28,4 +28,4 @@ if __name__ == "__main__":
     train_obs, test_obs, train_targets, test_targets = split_data(obs, targets)
 
     # measure_dist(train_obs[3], train_obs[1])
-    nearest_neighbour(train_obs, train_targets)
+    print(nearest_neighbour(train_obs, train_targets))
