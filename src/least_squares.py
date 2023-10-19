@@ -1,19 +1,5 @@
 import numpy as np
-import os
-
-
-def read_dataset(idx):
-    project_dir = os.path.dirname(os.path.dirname((__file__)))
-    file_path = project_dir + f"/data/ds-{idx}.txt"
-    data_array = np.loadtxt(file_path)
-    targets, obs = data_array[:, 0].copy(), data_array[:, 1:].copy()
-    return targets, obs
-
-
-def split_data(obs, targets):
-    train_obs, train_targets = obs[1::2], targets[1::2]
-    test_obs, test_targets = obs[0::2], targets[0::2]
-    return train_obs, test_obs, train_targets, test_targets
+from utils import *
 
 
 def least_params(train_obs):
@@ -28,7 +14,9 @@ def least_params(train_obs):
 
 def least_discriminant(params):
     def discriminant(test_obs):
-        return params.T @ test_obs
+        bias = np.ones((len(train_obs), 1))
+        ext_test_obs = np.concatenate((bias, test_obs), axis=1)
+        return ext_test_obs @ params
 
     return discriminant
 
@@ -36,5 +24,8 @@ def least_discriminant(params):
 if __name__ == "__main__":
     targets, obs = read_dataset(1)
     train_obs, test_obs, train_targets, test_targets = split_data(obs, targets)
+    print(train_obs)
 
-    least_params(train_obs)
+    func = least_discriminant(least_params(train_obs))
+
+    print(np.where(func(test_obs) > 0, 1, 2))
