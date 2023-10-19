@@ -1,7 +1,10 @@
 import numpy as np
+import os
 
 
-def read_file(file_path):
+def read_dataset(idx):
+    project_dir = os.path.dirname(os.path.dirname((__file__)))
+    file_path = project_dir + f"/data/ds-{idx}.txt"
     data_array = np.loadtxt(file_path)
     targets, obs = data_array[:, 0].copy(), data_array[:, 1:].copy()
     return targets, obs
@@ -35,7 +38,7 @@ def nearest_neighbour(train_obs, train_targets):
     
 
 if __name__ == "__main__": 
-    targets, obs = read_file("/home/gregz/Programs/Pattern-Recognition_1/data/ds-1.txt")
+    targets, obs = read_dataset(1)
     train_obs, test_obs, train_targets, test_targets = split_data(obs, targets)   
 
     # measure_dist(train_obs[3], train_obs[1])
