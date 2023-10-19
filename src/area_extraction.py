@@ -3,9 +3,11 @@ import numpy as np
 import os
 import copy
 
+
 drawing = False
 ix, iy = -1, -1
 extracted_areas = []
+
 image_path = os.path.dirname(os.path.dirname(__file__)) + "/data/Bilde1.png"
 img = cv2.imread(image_path)
 original_img = copy.deepcopy(img)
@@ -44,21 +46,27 @@ def draw_rectangle(event, x, y, flags, param):
 
 
 # Load the image
-image_path = os.path.dirname(os.path.dirname(__file__)) + "/data/Bilde1.png"
-img = cv2.imread(image_path)
+def extract_areas(image_idx): 
+    drawing = False
+    ix, iy = -1, -1
+    extracted_areas = []
 
-cv2.namedWindow("image")
-cv2.setMouseCallback("image", draw_rectangle)
+    image_path = os.path.dirname(os.path.dirname(__file__)) + "/data/Bilde1.png"
+    img = cv2.imread(image_path)
+    original_img = copy.deepcopy(img)
 
-while True:
-    cv2.imshow("image", img)
-    k = cv2.waitKey(1) & 0xFF
-    if k == 27:  # Press 'Esc' to exit
-        break
+    cv2.namedWindow("image")
+    cv2.setMouseCallback("image", draw_rectangle)
 
-cv2.destroyAllWindows()
-for i, area in enumerate(extracted_areas):
-    print(area.shape)
-    cv2.imshow(f"Area {i}", area)
-    cv2.waitKey(0)
+    while True:
+        cv2.imshow("image", img)
+        k = cv2.waitKey(1) & 0xFF
+        if k == 27:  # Press 'Esc' to exit
+            break
+
     cv2.destroyAllWindows()
+
+    return extracted_areas
+
+extract_areas(1)
+
