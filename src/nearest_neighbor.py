@@ -7,10 +7,10 @@ def measure_dist(obs_1, obs_2):
     return distance
 
 
-def nearest_neighbour(train_obs, train_targets):
-    c_train_obs = np.zeros((len(train_obs), 1))
+def nearest_neighbour(train_obs, train_targets, test_obs):
+    c_test_obs = np.zeros((len(test_obs), 1))
 
-    for i in range(len(train_obs)):
+    for i in range(len(test_obs)):
         near_neigh = np.argmin(
             [
                 measure_dist(train_obs[i], train_obs[j])
@@ -18,9 +18,9 @@ def nearest_neighbour(train_obs, train_targets):
                 if i != j
             ]
         )
-        c_train_obs[i] = train_targets[near_neigh]
+        c_test_obs[i] = train_targets[near_neigh]
 
-    return c_train_obs.flatten()
+    return c_test_obs.flatten()
 
 
 if __name__ == "__main__":
@@ -28,4 +28,4 @@ if __name__ == "__main__":
     train_obs, test_obs, train_targets, test_targets = split_data(obs, targets)
 
     # measure_dist(train_obs[3], train_obs[1])
-    print(nearest_neighbour(train_obs, train_targets))
+    print(nearest_neighbour(train_obs, train_targets, train_obs))

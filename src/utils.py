@@ -16,7 +16,7 @@ def split_data(obs, targets):
     return train_obs, test_obs, train_targets, test_targets
 
 
-def least_params(train_obs):
+def least_params(train_obs, train_targets):
     bias = np.ones((len(train_obs), 1))
     ext_train_obs = np.concatenate((bias, train_obs), axis=1)
 
@@ -28,9 +28,9 @@ def least_params(train_obs):
 
 def least_discriminant(params):
     def discriminant(test_obs):
-        bias = np.ones((len(train_obs), 1))
+        bias = np.ones((len(test_obs), 1))
         ext_test_obs = np.concatenate((bias, test_obs), axis=1)
-        return ext_test_obs @ params
+        return np.where(ext_test_obs @ params > 0, 1, 2)
 
     return discriminant
 
@@ -40,20 +40,20 @@ def measure_dist(obs_1, obs_2):
     return distance
 
 
-def nearest_neighbour(train_obs, train_targets):
-    c_train_obs = np.zeros((len(train_obs), 1))
+def nearest_neighbour(train_obs, train_targets, test_obs):
+    c_test_obs = np.zeros((len(test_obs), 1))
 
-    for i in range(len(train_obs)):
+    for i in range(len(test_obs)):
         near_neigh = np.argmin(
             [
-                measure_dist(train_obs[i], train_obs[j])
+                measure_dist(test_obs[i], train_obs[j])
                 for j in range(len(train_obs))
                 if i != j
             ]
         )
-        c_train_obs[i] = train_targets[near_neigh]
+        c_test_obs[i] = train_targets[near_neigh]
 
-    return c_train_obs.flatten()
+    return c_test_obs.flatten()
 
 
 def estimate_a_priori(train_targets):
@@ -94,5 +94,19 @@ def _class_discriminant(class_mean, class_cov, a_priori_prob):
     return lambda test_obs: np.sum(test_obs @ W * test_obs, axis=1) + test_obs @ w + w_0
 
 
+def minimum_error(train_obs, train_targets):
+    class_one_mean, class_two_mean = estimate_class_mean(train_obs, train_targets)
+    cov_one, cov_two = estimate_class_cov(
+        class_one_mean, class_two_mean, train_obs, train_targets
+    )
+
+    a_priori_one, a_priori_two = estimate_a_priori(train_targets)
+
+    discriminant_one = _class_discriminant(class_one_mean, cov_one, a_priori_one)
+    discriminant_two = _class_discriminant(class_two_mean, cov_two, a_priori_two)
+
+    return gen_discriminant(discriminant_one, discriminant_two)
+
+
 def gen_discriminant(c1_discr, c2_discr):
-    return lambda test_obs: c1_discr(test_obs) - c2_discr(test_obs)
+    return lambda test_obs: np.where(c1_discr(test_obs) - c2_discr(test_obs) > 0, 1, 2)
