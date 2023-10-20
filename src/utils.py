@@ -102,6 +102,8 @@ def pixels_discriminants(pixel_means, pixel_covs, pixel_apriori):
 
 def segment_image(image_path, discriminants):
     img = cv.imread(image_path)
+    if img.shape[:2] > (800,800):
+        img = cv.resize(img, (600,600))
     seg_img = np.zeros_like(img)
     colors = np.array(
         [

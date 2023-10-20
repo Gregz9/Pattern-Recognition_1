@@ -9,6 +9,8 @@ class RectangleExtractor:
     def __init__(self, image_path):
         self.image_path = image_path
         self.img = cv2.imread(image_path)
+        if self.img.shape[:2] > (800,800): 
+            self.img = cv2.resize(self.img, (600,600))
         self.original_img = copy.deepcopy(self.img)
         self.drawing = False
         self.ix, self.iy = -1, -1
@@ -54,7 +56,7 @@ class RectangleExtractor:
 
 
 if __name__ == "__main__":
-    image_path = os.path.dirname(os.path.dirname(__file__)) + "/data/Bilde1.png"
+    image_path = os.path.dirname(os.path.dirname(__file__)) + "/data/Bilde3.png"
     extractor = RectangleExtractor(image_path)
     extracted_areas = extractor.start_extraction()
 
