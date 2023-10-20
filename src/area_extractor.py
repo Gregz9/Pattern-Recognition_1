@@ -57,11 +57,10 @@ if __name__ == "__main__":
     extracted_areas = extractor.start_extraction()
 
     dataset = create_dataset(extracted_areas)
-    for area in dataset: 
-        print(area)
+    norm_dataset = normalize_dataset(dataset)
     
-    for i, area in enumerate(extracted_areas):
-        cv2.imshow(f"Area {i}", area)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-
+    # for i, area in enumerate(extracted_areas):
+    #     cv2.imshow(f"Area {i}", area)
+    #     cv2.waitKey(0)
+    #     cv2.destroyAllWindows()
+    #
