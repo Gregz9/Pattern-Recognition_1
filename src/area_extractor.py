@@ -58,8 +58,10 @@ if __name__ == "__main__":
 
     dataset = create_dataset(extracted_areas)
     norm_dataset = normalize_dataset(dataset)
-    estimate_pixels_apriori(dataset)
-    
+    probs = estimate_pixels_apriori(dataset)
+    means = estimate_pixels_mean(dataset)
+    covs = estimate_pixels_cov(dataset, means)
+    disc1 = class_discriminant(means[0, 1:], covs[0], probs[0])
     # for i, area in enumerate(extracted_areas):
     #     cv2.imshow(f"Area {i}", area)
     #     cv2.waitKey(0)
