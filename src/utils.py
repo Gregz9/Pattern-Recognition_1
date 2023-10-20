@@ -34,7 +34,15 @@ def least_discriminant(params):
 
     return discriminant
 
+def create_dataset(pixels): 
+    for i in range(len(pixels)): 
+        pixels[i] = pixels[i].reshape(-1, 3)
+        pixels[i] = np.concatenate((np.ones((pixels[i].shape[0], 1))*(i+1), pixels[i]), axis=1)
+    return pixels
 
+def normalize_dataset(pixels): 
+    pass 
+        
 def measure_dist(obs_1, obs_2):
     distance = np.linalg.norm(obs_1 - obs_2)
     return distance
