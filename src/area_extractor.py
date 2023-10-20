@@ -58,6 +58,7 @@ if __name__ == "__main__":
 
     dataset = create_dataset(extracted_areas)
     norm_dataset = normalize_dataset(dataset)
+    estimate_pixels_apriori(dataset)
     
     # for i, area in enumerate(extracted_areas):
     #     cv2.imshow(f"Area {i}", area)

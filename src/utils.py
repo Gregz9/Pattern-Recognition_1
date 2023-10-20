@@ -36,32 +36,37 @@ def least_discriminant(params):
 
 
 def create_dataset(pixels):
+    dataset = []
     for i in range(len(pixels)):
         pixels[i] = pixels[i].reshape(-1, 3)
         pixels[i] = np.concatenate(
             (np.ones((pixels[i].shape[0], 1)) * (i + 1), pixels[i]), axis=1
         )
-    return pixels
+        dataset.extend(pixels[i])
+    return np.array(dataset)
 
 
 def normalize_dataset(pixels):
-    for i in range(len(pixels)):
-        r = pixels[0][:, 1]
-        g = pixels[0][:, 2]
-        b = pixels[0][:, 3]
+    r = pixels[:, 1]
+    g = pixels[:, 2]
+    b = pixels[:, 3]
 
-        t1 = r / np.sum(pixels[0][:, 1:], axis=1)
-        t2 = g / np.sum(pixels[0][:, 1:], axis=1)
-        t3 = b / np.sum(pixels[0][:, 1:], axis=1)
+    t1 = r / np.sum(pixels[:, 1:], axis=1)
+    t2 = g / np.sum(pixels[:, 1:], axis=1)
+    t3 = b / np.sum(pixels[:, 1:], axis=1)
 
-        pixels[0][:, 1] = t1
-        pixels[0][:, 2] = t2
-        pixels[0][:, 3] = t3
+    pixels[:, 1] = t1
+    pixels[:, 2] = t2
+    pixels[:, 3] = t3
 
     return pixels
 
-    pass
-
+def estimate_pixels_apriori(pixels): 
+    probs = []
+    for i in range(np.int64(np.max(pixels[:, 0], axis=0))): 
+        prob = np.sum(pixels[:, 0] == (i+1)) / pixels.shape[0]
+        probs.append(prob)
+    return np.array(probs)
 
 def measure_dist(obs_1, obs_2):
     distance = np.linalg.norm(obs_1 - obs_2)
@@ -82,7 +87,6 @@ def nearest_neighbour(train_obs, train_targets, test_obs):
         c_test_obs[i] = train_targets[near_neigh]
 
     return c_test_obs.flatten()
-
 
 def estimate_a_priori(train_targets):
     class_one = np.sum(train_targets == 1)
