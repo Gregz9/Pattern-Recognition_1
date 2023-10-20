@@ -1,5 +1,7 @@
 import numpy as np
 import os
+import cv2 as cv
+import copy
 
 
 def read_dataset(idx):
@@ -89,6 +91,39 @@ def estimate_pixels_cov(pixels, pixel_class_means):
     return np.array(covs)
 
 
+def pixels_discriminants(pixel_means, pixel_covs, pixel_apriori):
+    discriminants = []
+    for i in range(len(pixel_means)):
+        discriminants.append(
+            class_discriminant(pixel_means[i], pixel_covs[i], pixel_apriori[i], pixels=True)
+        )
+    return discriminants
+
+
+def segment_image(image_path, discriminants):
+    img = cv.imread(image_path)
+    seg_img = np.zeros_like(img)
+    colors = np.array(
+        [
+            [255, 0, 0],
+            [0, 255, 0],
+            [0, 0, 255],
+            [255, 255, 0],
+            [255, 0, 255],
+            [0, 255, 255],
+            [128, 0, 128],
+            [255, 165, 0],
+            [0, 128, 0],
+            [128, 128, 128],
+        ]
+    )
+    for x in range(img.shape[0]):
+        for y in range(img.shape[1]):
+            cl = np.argmax([disc(img[x, y]) for disc in discriminants])
+            seg_img[x,y] = colors[cl]
+    return seg_img
+
+
 def measure_dist(obs_1, obs_2):
     distance = np.linalg.norm(obs_1 - obs_2)
     return distance
@@ -134,18 +169,23 @@ def estimate_class_cov(class_one_mean, class_two_mean, train_obs, train_targets)
     return cov_one, cov_two
 
 
-def class_discriminant(class_mean, class_cov, a_priori_prob):
+def class_discriminant(class_mean, class_cov, a_priori_prob, pixels=False):
     W = -(1 / 2) * np.linalg.inv(class_cov)
 
     w = np.linalg.inv(class_cov) @ class_mean
 
+    det_cov = np.log(np.linalg.det(class_cov))
+    det_cov = det_cov if det_cov > 1e-5 else 0
+
     w_0 = (
         -(1 / 2) * class_mean @ np.linalg.inv(class_cov) @ class_mean
-        - (1 / 2) * np.log(np.linalg.det(class_cov))
+        - (1 / 2) * det_cov
         + np.log(a_priori_prob)
     )
-
-    return lambda test_obs: np.sum(test_obs @ W * test_obs, axis=1) + test_obs @ w + w_0
+    if pixels: 
+        return lambda test_obs: test_obs.T @ W @ test_obs + test_obs @ w + w_0
+    else: 
+        return lambda test_obs: np.sum(test_obs @ W * test_obs, axis=1) + test_obs @ w + w_0
 
 
 def minimum_error(train_obs, train_targets):

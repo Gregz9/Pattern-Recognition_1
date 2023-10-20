@@ -4,6 +4,7 @@ import copy
 import numpy as np
 from utils import *
 
+
 class RectangleExtractor:
     def __init__(self, image_path):
         self.image_path = image_path
@@ -51,17 +52,30 @@ class RectangleExtractor:
         cv2.destroyAllWindows()
         return self.extracted_areas
 
+
 if __name__ == "__main__":
     image_path = os.path.dirname(os.path.dirname(__file__)) + "/data/Bilde1.png"
     extractor = RectangleExtractor(image_path)
     extracted_areas = extractor.start_extraction()
 
     dataset = create_dataset(extracted_areas)
-    norm_dataset = normalize_dataset(dataset)
+    # norm_dataset = normalize_dataset(dataset)
     probs = estimate_pixels_apriori(dataset)
     means = estimate_pixels_mean(dataset)
     covs = estimate_pixels_cov(dataset, means)
-    disc1 = class_discriminant(means[0, 1:], covs[0], probs[0])
+    discs = pixels_discriminants(means[:, 1:], covs, probs)
+
+    seg_img = segment_image(image_path, discs)
+    combined_img = cv2.hconcat([seg_img, extractor.img])
+    while True:
+        cv2.imshow("image", combined_img)
+        k = cv2.waitKey(1) & 0xFF
+        if k == 27:  # Press 'Esc' to exit
+            break
+
+    cv2.destroyAllWindows()
+    # disc1 = class_discriminant(means[0, 1:], covs[0], probs[0])
+
     # for i, area in enumerate(extracted_areas):
     #     cv2.imshow(f"Area {i}", area)
     #     cv2.waitKey(0)
