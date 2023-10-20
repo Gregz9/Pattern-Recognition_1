@@ -61,12 +61,33 @@ def normalize_dataset(pixels):
 
     return pixels
 
-def estimate_pixels_apriori(pixels): 
+
+def estimate_pixels_apriori(pixels):
     probs = []
-    for i in range(np.int64(np.max(pixels[:, 0], axis=0))): 
-        prob = np.sum(pixels[:, 0] == (i+1)) / pixels.shape[0]
+    for i in range(np.int64(np.max(pixels[:, 0], axis=0))):
+        prob = np.sum(pixels[:, 0] == (i + 1)) / pixels.shape[0]
         probs.append(prob)
     return np.array(probs)
+
+
+def estimate_pixels_mean(pixels):
+    means = []
+    for i in range(np.int64(np.max(pixels[:, 0], axis=0))):
+        est_mean = pixels[pixels[:, 0] == (i + 1)].mean(axis=0)
+        means.append(est_mean)
+    return np.array(means)
+
+
+def estimate_pixels_cov(pixels, pixel_class_means):
+    covs = []
+    for i in range(np.int64(np.max(pixels[:, 0], axis=0))):
+        N_class = np.sum(pixels[:, 0] == (i + 1))
+        class_dev = pixels[pixels[:, 0] == (i + 1), 1:] - pixel_class_means[i, 1:]
+        class_cov = (class_dev.T @ class_dev) / (N_class - 1)
+        covs.append(class_cov)
+
+    return np.array(covs)
+
 
 def measure_dist(obs_1, obs_2):
     distance = np.linalg.norm(obs_1 - obs_2)
@@ -87,6 +108,7 @@ def nearest_neighbour(train_obs, train_targets, test_obs):
         c_test_obs[i] = train_targets[near_neigh]
 
     return c_test_obs.flatten()
+
 
 def estimate_a_priori(train_targets):
     class_one = np.sum(train_targets == 1)
@@ -112,7 +134,7 @@ def estimate_class_cov(class_one_mean, class_two_mean, train_obs, train_targets)
     return cov_one, cov_two
 
 
-def _class_discriminant(class_mean, class_cov, a_priori_prob):
+def class_discriminant(class_mean, class_cov, a_priori_prob):
     W = -(1 / 2) * np.linalg.inv(class_cov)
 
     w = np.linalg.inv(class_cov) @ class_mean
