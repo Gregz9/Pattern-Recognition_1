@@ -56,7 +56,7 @@ class RectangleExtractor:
 
 
 if __name__ == "__main__":
-    image_path = os.path.dirname(os.path.dirname(__file__)) + "/data/Bilde3.png"
+    image_path = os.path.dirname(os.path.dirname(__file__)) + "/data/Car.png"
     extractor = RectangleExtractor(image_path)
     extracted_areas = extractor.start_extraction()
 
