@@ -56,8 +56,9 @@ class RectangleExtractor:
 
 
 if __name__ == "__main__":
-    image_path = os.path.dirname(os.path.dirname(__file__)) + "/data/Car.png"
-    extractor = RectangleExtractor(image_path)
+    train_image_path = os.path.dirname(os.path.dirname(__file__)) + "/data/Bilde2.png"
+    test_image_path = os.path.dirname(os.path.dirname(__file__)) + "/data/Bilde3.png"
+    extractor = RectangleExtractor(train_image_path)
     extracted_areas = extractor.start_extraction()
 
     dataset = create_dataset(extracted_areas)
@@ -67,8 +68,9 @@ if __name__ == "__main__":
     covs = estimate_pixels_cov(dataset, means)
     discs = pixels_discriminants(means[:, 1:], covs, probs)
 
-    seg_img = segment_image(image_path, discs)
+    seg_img = segment_image(test_image_path, discs)
     combined_img = cv2.hconcat([seg_img, extractor.img])
+    cv2.imwrite(os.path.dirname(os.path.dirname(__file__)) + "/data/Bilde3_segmentert.png", combined_img)
     while True:
         cv2.imshow("image", combined_img)
         k = cv2.waitKey(1) & 0xFF
