@@ -13,8 +13,8 @@ def read_dataset(idx):
 
 
 def split_data(obs, targets):
-    train_obs, train_targets = obs[1::2], targets[1::2]
-    test_obs, test_targets = obs[0::2], targets[0::2]
+    train_obs, train_targets = obs[0::2], targets[0::2]
+    test_obs, test_targets = obs[1::2], targets[1::2]
     return train_obs, test_obs, train_targets, test_targets
 
 
@@ -198,8 +198,8 @@ def minimum_error(train_obs, train_targets):
 
     a_priori_one, a_priori_two = estimate_a_priori(train_targets)
 
-    discriminant_one = _class_discriminant(class_one_mean, cov_one, a_priori_one)
-    discriminant_two = _class_discriminant(class_two_mean, cov_two, a_priori_two)
+    discriminant_one = class_discriminant(class_one_mean, cov_one, a_priori_one)
+    discriminant_two = class_discriminant(class_two_mean, cov_two, a_priori_two)
 
     return gen_discriminant(discriminant_one, discriminant_two)
 

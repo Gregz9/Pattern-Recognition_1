@@ -1,4 +1,4 @@
-from snutils import *
+from utils import * 
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -38,7 +38,7 @@ for dataset_idx in (1, 2, 3):
                 np.sum(np.where(preds != train_targets, 1, 0)) / train_targets.shape[0]
             )
 
-            # print(f"{dimensions=} {fail_rate=}")
+            print(f"{dimensions=} {fail_rate=}")
 
             if fail_rate < best_fail_rate:
                 best_dim = dimensions
@@ -54,7 +54,7 @@ for dataset_idx in (1, 2, 3):
             )
             plt.show()
 
-        print(f"Lowest fail rate was {best_fail_rate:.3f}, for features: {best_dim}")
+        # print(f"Lowest fail rate was {best_fail_rate:.3f}, for features: {best_dim}")
 
         # ------------ here starts the actual grog way ------------
 
