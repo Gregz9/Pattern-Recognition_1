@@ -95,15 +95,17 @@ def pixels_discriminants(pixel_means, pixel_covs, pixel_apriori):
     discriminants = []
     for i in range(len(pixel_means)):
         discriminants.append(
-            class_discriminant(pixel_means[i], pixel_covs[i], pixel_apriori[i], pixels=True)
+            class_discriminant(
+                pixel_means[i], pixel_covs[i], pixel_apriori[i], pixels=True
+            )
         )
     return discriminants
 
 
 def segment_image(image_path, discriminants):
     img = cv.imread(image_path)
-    if img.shape[:2] > (800,800):
-        img = cv.resize(img, (600,600))
+    if img.shape[:2] > (800, 800):
+        img = cv.resize(img, (600, 600))
     seg_img = np.zeros_like(img)
     colors = np.array(
         [
@@ -122,7 +124,7 @@ def segment_image(image_path, discriminants):
     for x in range(img.shape[0]):
         for y in range(img.shape[1]):
             cl = np.argmax([disc(img[x, y]) for disc in discriminants])
-            seg_img[x,y] = colors[cl]
+            seg_img[x, y] = colors[cl]
     return seg_img
 
 
@@ -165,8 +167,8 @@ def estimate_class_cov(class_one_mean, class_two_mean, train_obs, train_targets)
     N_two = train_obs.shape[0] - N_one
     class_one_dev = train_obs[train_targets == 1] - class_one_mean
     class_two_dev = train_obs[train_targets == 2] - class_two_mean
-    cov_one = (class_one_dev.T @ class_one_dev) / (N_one - 1)
-    cov_two = (class_two_dev.T @ class_two_dev) / (N_two - 1)
+    cov_one = (class_one_dev.T @ class_one_dev) / N_one
+    cov_two = (class_two_dev.T @ class_two_dev) / N_two
 
     return cov_one, cov_two
 
@@ -177,17 +179,21 @@ def class_discriminant(class_mean, class_cov, a_priori_prob, pixels=False):
     w = np.linalg.inv(class_cov) @ class_mean
 
     det_cov = np.log(np.linalg.det(class_cov))
-    det_cov = det_cov if det_cov > 1e-5 else 0
+    # det_cov = det_cov if det_cov > 1e-5 else 0
 
     w_0 = (
         -(1 / 2) * class_mean @ np.linalg.inv(class_cov) @ class_mean
         - (1 / 2) * det_cov
         + np.log(a_priori_prob)
     )
-    if pixels: 
+    if pixels:
         return lambda test_obs: test_obs.T @ W @ test_obs + test_obs @ w + w_0
-    else: 
-        return lambda test_obs: np.sum(test_obs @ W * test_obs, axis=1) + test_obs @ w + w_0
+    else:
+        return (
+            lambda test_obs: np.sum(test_obs @ W * test_obs, axis=1)
+            + test_obs @ w
+            + w_0
+        )
 
 
 def minimum_error(train_obs, train_targets):
